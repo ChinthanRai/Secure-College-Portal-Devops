@@ -1,132 +1,188 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import adminService from '../services/adminService';
 import authService from '../services/authService';
+import {
+    Users, BookOpen, AlertCircle, CheckCircle, XCircle
+} from 'lucide-react';
+import {
+    PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend
+} from 'recharts';
 
 const AdminDashboard = () => {
-    const [courses, setCourses] = useState([]);
-    const [requests, setRequests] = useState([]);
-    const [formData, setFormData] = useState({ title: '', code: '', description: '', credits: 0, instructor: '' });
-    const user = authService.getCurrentUser();
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchCourses();
-        fetchRequests();
+        const fetchStats = async () => {
+            try {
+                const user = authService.getCurrentUser();
+                if (user && user.token) {
+                    const stats = await adminService.getDashboardStats(user.token);
+                    setData(stats);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
     }, []);
 
-    const fetchCourses = async () => {
-        try {
-            const { data } = await axios.get('http://localhost:5000/api/courses', {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
-            setCourses(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    if (loading) {
+        return <div className="p-8 text-center text-gray-400 animate-pulse bg-navy-900 min-h-screen">Loading Dashboard...</div>;
+    }
 
-    const fetchRequests = async () => {
-        try {
-            const { data } = await axios.get('http://localhost:5000/api/enrollment/requests', {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
-            setRequests(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    if (!data) return <div className="p-8 text-center text-red-400 bg-navy-900 min-h-screen">Error loading dashboard data.</div>;
 
-    const handleAddCourse = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post('http://localhost:5000/api/courses', formData, {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
-            fetchCourses();
-            setFormData({ title: '', code: '', description: '', credits: 0, instructor: '' });
-        } catch (error) {
-            alert('Error adding course');
-        }
-    };
-
-    const handleProcessRequest = async (requestId, action) => {
-        try {
-            await axios.post('http://localhost:5000/api/enrollment/process', { requestId, action }, {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
-            alert(`Request ${action}ed`);
-            fetchRequests();
-        } catch (error) {
-            alert('Error processing request');
-        }
-    };
+    const COLORS = ['#FBBF24', '#64ffda', '#EF4444']; // Pending, Approved (Teal), Rejected
 
     return (
-        <div className="container mx-auto p-4 md:p-8">
-            <h1 className="text-3xl text-teal-300 font-bold mb-8">Admin Dashboard - Manage Courses</h1>
+        <div className="min-h-screen bg-navy-900 p-6 text-gray-100">
+            <div className="container mx-auto">
+                <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
-            {/* Pending Requests Section */}
-            <div className="mb-12">
-                <h2 className="text-2xl text-white mb-6 border-b border-navy-700 pb-2">Pending Enrollment Requests</h2>
-                <div className="grid grid-cols-1 gap-4">
-                    {requests.map(req => (
-                        <div key={req._id} className="bg-navy-800 p-4 rounded-lg border border-navy-700 flex flex-col md:flex-row justify-between items-center shadow-md">
-                            <div className="mb-4 md:mb-0">
-                                <p className="text-white font-bold text-lg">{req.student?.name} <span className="text-gray-400 text-sm font-normal">({req.student?.email})</span></p>
-                                <p className="text-teal-300">Requesting: {req.course?.title} ({req.course?.code})</p>
-                                <p className="text-gray-500 text-xs mt-1">Requested: {new Date(req.createdAt).toLocaleString()}</p>
-                            </div>
-                            <div className="flex space-x-4">
-                                <button
-                                    onClick={() => handleProcessRequest(req._id, 'approve')}
-                                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-bold transition shadow-lg"
-                                >
-                                    Approve
-                                </button>
-                                <button
-                                    onClick={() => handleProcessRequest(req._id, 'reject')}
-                                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-bold transition shadow-lg"
-                                >
-                                    Reject
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                    {requests.length === 0 && <p className="text-gray-500 italic">No pending requests.</p>}
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <StatCard
+                        title="Total Students"
+                        value={data.stats.totalStudents}
+                        icon={<Users className="w-8 h-8 text-blue-400" />}
+                        color="bg-blue-400/10"
+                    />
+                    <StatCard
+                        title="Active Courses"
+                        value={data.stats.activeCourses}
+                        icon={<BookOpen className="w-8 h-8 text-teal-300" />}
+                        color="bg-teal-300/10"
+                    />
+                    <StatCard
+                        title="Pending Requests"
+                        value={data.stats.pendingRequests}
+                        icon={<AlertCircle className="w-8 h-8 text-yellow-500" />}
+                        color="bg-yellow-500/10"
+                    />
+                    <StatCard
+                        title="Slot Utilization"
+                        value={`${data.stats.filledSlots} / ${data.stats.totalSlots}`}
+                        icon={<CheckCircle className="w-8 h-8 text-teal-300" />}
+                        color="bg-teal-300/10"
+                    />
                 </div>
-            </div>
 
-            {/* Add Course Form */}
-            <div className="bg-navy-800 p-6 rounded-lg shadow-lg border border-navy-700 mb-8">
-                <h2 className="text-xl text-white mb-4">Add New Course</h2>
-                <form onSubmit={handleAddCourse} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input placeholder="Code (e.g. MCA101)" value={formData.code} onChange={e => setFormData({ ...formData, code: e.target.value })} className="p-2 rounded bg-navy-900 text-white border border-gray-700" required />
-                    <input placeholder="Course Title" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="p-2 rounded bg-navy-900 text-white border border-gray-700" required />
-                    <input placeholder="Instructor" value={formData.instructor} onChange={e => setFormData({ ...formData, instructor: e.target.value })} className="p-2 rounded bg-navy-900 text-white border border-gray-700" required />
-                    <input type="number" placeholder="Credits" value={formData.credits} onChange={e => setFormData({ ...formData, credits: e.target.value })} className="p-2 rounded bg-navy-900 text-white border border-gray-700" required />
-                    <textarea placeholder="Description" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="md:col-span-2 p-2 rounded bg-navy-900 text-white border border-gray-700" required />
-                    <button type="submit" className="md:col-span-2 bg-teal-300 text-navy-900 py-2 rounded font-bold hover:bg-teal-400">Add Course</button>
-                </form>
-            </div>
-
-            {/* Course List */}
-            <h2 className="text-2xl text-white mb-6 border-b border-navy-700 pb-2">All Courses</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {courses.map(course => (
-                    <div key={course._id} className="bg-navy-800 p-5 rounded-lg border border-navy-700">
-                        <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-xl font-bold text-white">{course.title}</h3>
-                            <span className="bg-teal-300/20 text-teal-300 px-2 py-1 rounded text-sm">{course.code}</span>
-                        </div>
-                        <p className="text-gray-400 text-sm mb-4">{course.description}</p>
-                        <div className="text-gray-500 text-xs flex justify-between">
-                            <span>Inst: {course.instructor}</span>
-                            <span>Credits: {course.credits}</span>
+                {/* Charts Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Request Status Distribution */}
+                    <div className="bg-navy-800 p-6 rounded-xl shadow-lg border border-navy-700">
+                        <h2 className="text-lg font-semibold text-teal-300 mb-4">Request Outcomes</h2>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={data.charts.statusDistribution}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {data.charts.statusDistribution.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip contentStyle={{ backgroundColor: '#112240', border: '1px solid #233554', color: '#ccd6f6' }} />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
-                ))}
+
+                    {/* Student Registration Trends */}
+                    <div className="bg-navy-800 p-6 rounded-xl shadow-lg border border-navy-700">
+                        <h2 className="text-lg font-semibold text-teal-300 mb-4">Student Registration Growth</h2>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={data.charts.enrollmentTrends}>
+                                    <XAxis dataKey="name" stroke="#8892b0" />
+                                    <YAxis stroke="#8892b0" />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
+                                        contentStyle={{ backgroundColor: '#112240', border: '1px solid #233554', color: '#ccd6f6' }}
+                                    />
+                                    <Bar dataKey="students" fill="#3B82F6" radius={[4, 4, 0, 0]} name="New Students" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Trending Courses Section */}
+                <div className="bg-navy-800 p-6 rounded-xl shadow-lg border border-navy-700 mb-8">
+                    <h2 className="text-lg font-semibold text-teal-300 mb-4">Trending Courses (Most Enrolled)</h2>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={data.charts.coursePopularity} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                <XAxis type="number" stroke="#8892b0" />
+                                <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 12, fill: '#8892b0' }} stroke="#8892b0" />
+                                <Tooltip
+                                    cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
+                                    contentStyle={{ backgroundColor: '#112240', border: '1px solid #233554', color: '#ccd6f6' }}
+                                />
+                                <Legend />
+                                <Bar dataKey="students" fill="#64ffda" radius={[0, 4, 4, 0]} name="Enrolled Students" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Dashboard Actions */}
+                <div className="bg-navy-800 p-6 rounded-xl shadow-lg border border-navy-700">
+                    <h2 className="text-lg font-semibold text-teal-300 mb-4">Dashboard Actions</h2>
+                    <div className="flex flex-wrap gap-4">
+                        <button
+                            onClick={() => window.location.href = '/admin/create-course'}
+                            className="px-6 py-2 bg-teal-300 text-navy-900 rounded-lg hover:bg-teal-400 transition font-bold"
+                        >
+                            Create New Course
+                        </button>
+                        <button
+                            onClick={() => window.location.href = '/admin/manage-courses'}
+                            className="px-6 py-2 border border-teal-300 text-teal-300 rounded-lg hover:bg-teal-300/10 transition font-bold"
+                        >
+                            Manage Courses
+                        </button>
+                        <button
+                            onClick={() => window.location.href = '/admin/manage-students'}
+                            className="px-6 py-2 border border-blue-400 text-blue-400 rounded-lg hover:bg-blue-400/10 transition font-bold"
+                        >
+                            Manage Students
+                        </button>
+                        <button
+                            onClick={() => window.location.href = '/admin/requests'}
+                            className="px-6 py-2 border border-yellow-500 text-yellow-500 rounded-lg hover:bg-yellow-500/10 transition font-bold"
+                        >
+                            Review Requests
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
+
+const StatCard = ({ title, value, icon, color }) => (
+    <div className={`p-6 rounded-xl border border-navy-700 shadow-lg flex items-center justify-between bg-navy-800 hover:border-teal-300 transition-all duration-300`}>
+        <div>
+            <p className="text-sm font-medium text-gray-400 mb-1">{title}</p>
+            <h3 className="text-2xl font-bold text-gray-100">{value}</h3>
+        </div>
+        <div className={`p-3 rounded-full ${color}`}>
+            {icon}
+        </div>
+    </div>
+);
 
 export default AdminDashboard;

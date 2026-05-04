@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const Course = require('../models/Course');
 const Otp = require('../models/Otp');
+const EnrollmentRequest = require('../models/EnrollmentRequest');
 const sendEmail = require('../utils/sendEmail');
+const { otpEmail, enrollmentReceived, enrollmentApproved, enrollmentRejected } = require('../utils/emailTemplates');
 
 // @desc    Generate OTP for Course Enrollment
 // @route   POST /api/enrollment/generate-otp
@@ -21,6 +23,16 @@ const generateEnrollmentOtp = async (req, res) => {
             return res.status(404).json({ message: 'Course not found' });
         }
 
+        // Check Logic: Deadline
+        if (course.enrollmentDeadline && new Date() > new Date(course.enrollmentDeadline)) {
+            return res.status(400).json({ message: 'Enrollment deadline has passed' });
+        }
+
+        // Check Logic: Seats
+        if (course.enrolledCount >= course.maxSeats) {
+            return res.status(400).json({ message: 'Course is full' });
+        }
+
         // Generate 6-digit OTP
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -31,17 +43,20 @@ const generateEnrollmentOtp = async (req, res) => {
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
 
-        // Send Email
-        await sendEmail({
+        // Send Email asynchronously to prevent UI lag
+        sendEmail({
             email: user.email,
             subject: `Course Enrollment OTP: ${course.title}`,
-            message: `Your OTP for enrolling in ${course.title} is ${otpCode}`,
-            otp: otpCode,
+            html: otpEmail(otpCode, course.title),
+        }).then(() => {
+            console.log(`✅ OTP sent successfully to ${user.email}`);
+        }).catch((emailError) => {
+            console.error('❌ Email sending failed:', emailError.message);
         });
 
-        res.json({ message: 'OTP sent to your email' });
+        res.json({ message: 'OTP sent to your email', otp: otpCode }); // Include OTP in response for testing
     } catch (error) {
-        console.error(error);
+        console.error('❌ Enrollment OTP Error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -80,13 +95,12 @@ const verifyEnrollmentOtp = async (req, res) => {
         // Fetch course details for email
         const course = await Course.findById(courseId);
 
-        // Send Request Received Email
-        await sendEmail({
+        // Send Request Received Email asynchronously
+        sendEmail({
             email: user.email,
             subject: `Enrollment Request Received: ${course.title}`,
-            message: `Your request to enroll in ${course.title} has been received and is waiting for Admin approval.`,
-            otp: 'PENDING',
-        });
+            html: enrollmentReceived(course.title),
+        }).catch(err => console.error('Email error:', err.message));
 
         res.json({ message: 'Enrollment request sent. Waiting for approval.' });
     } catch (error) {
@@ -108,6 +122,18 @@ const getPendingRequests = async (req, res) => {
     }
 };
 
+// @desc    Get My Pending Enrollment Requests
+// @route   GET /api/enrollment/my-requests
+// @access  Private (Student)
+const getMyRequests = async (req, res) => {
+    try {
+        const requests = await EnrollmentRequest.find({ student: req.user._id, status: 'pending' });
+        res.json(requests);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // @desc    Process Enrollment Request (Approve/Reject)
 // @route   POST /api/enrollment/process
 // @access  Private (Admin)
@@ -121,7 +147,16 @@ const processEnrollmentRequest = async (req, res) => {
         }
 
         if (action === 'approve') {
+            // Re-check Seat Availability
+            const course = await Course.findById(request.course._id);
+            if (course.enrolledCount >= course.maxSeats) {
+                return res.status(400).json({ message: 'Course is full. Cannot approve.' });
+            }
+
             request.status = 'approved';
+
+            // Atomic Increment of Seat Count
+            await Course.findByIdAndUpdate(course._id, { $inc: { enrolledCount: 1 } });
 
             // Add to User's enrolled courses
             const user = await User.findById(request.student._id);
@@ -130,22 +165,20 @@ const processEnrollmentRequest = async (req, res) => {
                 await user.save();
             }
 
-            await sendEmail({
+            sendEmail({
                 email: request.student.email,
                 subject: `Enrollment Approved: ${request.course.title}`,
-                message: `Congratulations! Your enrollment in ${request.course.title} has been approved.`,
-                otp: 'APPROVED',
-            });
+                html: enrollmentApproved(request.course.title),
+            }).catch(err => console.error('Email error:', err.message));
 
         } else if (action === 'reject') {
             request.status = 'rejected';
 
-            await sendEmail({
+            sendEmail({
                 email: request.student.email,
                 subject: `Enrollment Rejected: ${request.course.title}`,
-                message: `Your enrollment request for ${request.course.title} has been rejected. Contact admin for details.`,
-                otp: 'REJECTED',
-            });
+                html: enrollmentRejected(request.course.title),
+            }).catch(err => console.error('Email error:', err.message));
         } else {
             return res.status(400).json({ message: 'Invalid action' });
         }
@@ -158,4 +191,4 @@ const processEnrollmentRequest = async (req, res) => {
     }
 };
 
-module.exports = { generateEnrollmentOtp, verifyEnrollmentOtp, getPendingRequests, processEnrollmentRequest };
+module.exports = { generateEnrollmentOtp, verifyEnrollmentOtp, getPendingRequests, getMyRequests, processEnrollmentRequest };

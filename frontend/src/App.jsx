@@ -4,7 +4,11 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
+import CreateCourse from './pages/CreateCourse';
+import ManageCourses from './pages/ManageCourses';
+import ManageStudents from './pages/ManageStudents';
 import StudentDashboard from './pages/StudentDashboard';
+import EnrollmentRequests from './pages/EnrollmentRequests';
 import authService from './services/authService';
 
 const PrivateRoute = ({ children, role }) => {
@@ -28,6 +32,38 @@ function App() {
             element={
               <PrivateRoute role="admin">
                 <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/create-course"
+            element={
+              <PrivateRoute role="admin">
+                <CreateCourse />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/manage-courses"
+            element={
+              <PrivateRoute role="admin">
+                <ManageCourses />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/manage-students"
+            element={
+              <PrivateRoute role="admin">
+                <ManageStudents />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/requests"
+            element={
+              <PrivateRoute role="admin">
+                <EnrollmentRequests />
               </PrivateRoute>
             }
           />

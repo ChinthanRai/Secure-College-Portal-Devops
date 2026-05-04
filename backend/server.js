@@ -15,9 +15,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const scheduleReminders = require('./utils/scheduler');
+const adminRoutes = require('./routes/adminRoutes');
+
+// ... (other imports)
+
+// Initialize Scheduler
+scheduleReminders();
+
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/enrollment', enrollmentRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
     res.send('API is running...');

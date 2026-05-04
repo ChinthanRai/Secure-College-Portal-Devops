@@ -5,6 +5,7 @@ import authService from '../services/authService';
 const StudentDashboard = () => {
     const [courses, setCourses] = useState([]);
     const [enrolledCourses, setEnrolledCourses] = useState([]);
+    const [pendingCourseIds, setPendingCourseIds] = useState([]);
     const [showOtpModal, setShowOtpModal] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [otp, setOtp] = useState('');
@@ -13,8 +14,20 @@ const StudentDashboard = () => {
 
     useEffect(() => {
         fetchCourses();
+        fetchMyRequests();
         fetchUserData(); // Fetch user to see enrolled courses
     }, []);
+
+    const fetchMyRequests = async () => {
+        try {
+            const { data } = await axios.get('http://localhost:5000/api/enrollment/my-requests', {
+                headers: { Authorization: `Bearer ${user.token}` }
+            });
+            setPendingCourseIds(data.map(req => req.course));
+        } catch (error) {
+            console.error('Failed to fetch requests', error);
+        }
+    };
 
     const fetchCourses = async () => {
         try {
@@ -38,14 +51,16 @@ const StudentDashboard = () => {
         setSelectedCourse(course);
         setMessage('');
         try {
-            await axios.post('http://localhost:5000/api/enrollment/generate-otp',
+            const response = await axios.post('http://localhost:5000/api/enrollment/generate-otp',
                 { courseId: course._id },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
             setShowOtpModal(true);
-            alert('OTP sent to your email!');
+            // Show OTP in alert for testing (remove in production)
+            alert(`OTP sent to your email!\n\nFor testing, your OTP is: ${response.data.otp}\n\nPlease enter this OTP in the modal.`);
         } catch (error) {
             alert(error.response?.data?.message || 'Error generating OTP');
+            console.error('Enrollment error:', error);
         }
     };
 
@@ -58,6 +73,7 @@ const StudentDashboard = () => {
             alert('Enrollment Successful!');
             setShowOtpModal(false);
             setOtp('');
+            setPendingCourseIds(prev => [...prev, selectedCourse._id]);
             // Optional: Refresh enrolled list
         } catch (error) {
             alert(error.response?.data?.message || 'Invalid OTP');
@@ -81,17 +97,38 @@ const StudentDashboard = () => {
                                 <span className="bg-teal-300/20 text-teal-300 px-2 py-1 rounded text-sm">{course.code}</span>
                             </div>
                             <p className="text-gray-400 text-sm mb-4">{course.description}</p>
+                            
+                            <div className="mb-4 bg-navy-900 rounded p-3 text-sm text-gray-300 border border-navy-700">
+                                <div className="flex justify-between mb-1">
+                                    <span className="text-gray-500">Duration:</span>
+                                    <span>{new Date(course.startDate).toLocaleDateString()} to {new Date(course.endDate).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Sessions:</span>
+                                    <span>{course.sessionTimings}</span>
+                                </div>
+                            </div>
+
                             <div className="text-gray-500 text-xs flex justify-between border-t border-navy-600 pt-3 mb-4">
                                 <span>Inst: {course.instructor}</span>
                                 <span>Credits: {course.credits}</span>
                             </div>
                         </div>
-                        <button
-                            onClick={() => handleEnrollClick(course)}
-                            className="w-full bg-teal-300 text-navy-900 py-2 rounded font-bold hover:bg-teal-400 transition"
-                        >
-                            Enroll Now
-                        </button>
+                        {pendingCourseIds.includes(course._id) ? (
+                            <button
+                                disabled
+                                className="w-full bg-gray-600 text-gray-400 py-2 rounded font-bold cursor-not-allowed transition outline-none"
+                            >
+                                Pending Approval
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => handleEnrollClick(course)}
+                                className="w-full bg-teal-300 text-navy-900 py-2 rounded font-bold hover:bg-teal-400 transition"
+                            >
+                                Enroll Now
+                            </button>
+                        )}
                     </div>
                 ))}
                 {courses.length === 0 && <p className="text-gray-500">No courses available yet.</p>}

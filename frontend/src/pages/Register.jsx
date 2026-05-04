@@ -35,9 +35,18 @@ const Register = () => {
                     <label className="block text-gray-400 mb-2">Password</label>
                     <input name="password" type="password" onChange={handleChange} className="w-full p-2 rounded bg-navy-900 text-white border border-gray-700 focus:border-teal-300 outline-none" required />
                 </div>
+                <div className="mb-4">
+                    <label className="block text-gray-400 mb-2">Department</label>
+                    <input
+                        name="department"
+                        onChange={handleChange}
+                        placeholder="e.g., Computer Science"
+                        className="w-full p-2 rounded bg-navy-900 text-white border border-gray-700 focus:border-teal-300 outline-none"
+                    />
+                </div>
                 <div className="mb-6">
                     <label className="block text-gray-400 mb-2">Role</label>
-                    <select name="role" onChange={handleChange} className="w-full p-2 rounded bg-navy-900 text-white border border-gray-700 focus:border-teal-300 outline-none">
+                    <select name="role" onChange={handleChange} value={formData.role} className="w-full p-2 rounded bg-navy-900 text-white border border-gray-700 focus:border-teal-300 outline-none">
                         <option value="student">Student</option>
                         <option value="admin">Admin</option>
                     </select>
