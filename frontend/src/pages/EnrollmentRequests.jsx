@@ -16,7 +16,7 @@ const EnrollmentRequests = () => {
     const fetchRequests = async () => {
         try {
             const user = authService.getCurrentUser();
-            const { data } = await axios.get('http://localhost:5000/api/enrollment/requests', {
+            const { data } = await axios.get('http://51.20.31.138:5000/api/enrollment/requests', {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             setRequests(data);
@@ -36,7 +36,7 @@ const EnrollmentRequests = () => {
         setProcessing(requestId);
         try {
             const user = authService.getCurrentUser();
-            await axios.post('http://localhost:5000/api/enrollment/process',
+            await axios.post('http://51.20.31.138:5000/api/enrollment/process',
                 { requestId, action },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );

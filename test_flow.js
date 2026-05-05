@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://51.20.31.138:5000/api';
 
 async function request(endpoint, method = 'GET', body = null, token = null) {
     const headers = { 'Content-Type': 'application/json' };

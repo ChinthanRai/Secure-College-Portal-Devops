@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_URL = 'http://localhost:5000/api/admin';
+const API_URL = 'http://51.20.31.138:5000/api/admin';
 
 const getDashboardStats = async (token) => {
     const config = {

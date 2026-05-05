@@ -20,7 +20,7 @@ const StudentDashboard = () => {
 
     const fetchMyRequests = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/enrollment/my-requests', {
+            const { data } = await axios.get('http://51.20.31.138:5000/api/enrollment/my-requests', {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             setPendingCourseIds(data.map(req => req.course));
@@ -31,7 +31,7 @@ const StudentDashboard = () => {
 
     const fetchCourses = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/courses', {
+            const { data } = await axios.get('http://51.20.31.138:5000/api/courses', {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             setCourses(data);
@@ -51,7 +51,7 @@ const StudentDashboard = () => {
         setSelectedCourse(course);
         setMessage('');
         try {
-            const response = await axios.post('http://localhost:5000/api/enrollment/generate-otp',
+            const response = await axios.post('http://51.20.31.138:5000/api/enrollment/generate-otp',
                 { courseId: course._id },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
@@ -66,7 +66,7 @@ const StudentDashboard = () => {
 
     const handleVerifyOtp = async () => {
         try {
-            await axios.post('http://localhost:5000/api/enrollment/verify-otp',
+            await axios.post('http://51.20.31.138:5000/api/enrollment/verify-otp',
                 { courseId: selectedCourse._id, otp },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
