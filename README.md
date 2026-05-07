@@ -1,129 +1,146 @@
 # 🎓 Secure College Portal (DevOps Enabled)
 
-A role-based web application built using the **MERN stack** with integrated **Docker containerization** and **CI/CD pipeline** for automated build and deployment.
+A robust, role-based web application built using the **MERN stack** (MongoDB, Express, React, Node.js) with integrated **Docker containerization** and a complete **CI/CD pipeline** for automated build and deployment.
+
+![Project Status](https://img.shields.io/badge/status-active-success.svg)
+![GitHub repo size](https://img.shields.io/github/repo-size/ChinthanRai/secure-college-portal-devops)
+![Docker](https://img.shields.io/badge/docker-enabled-blue.svg)
+
+**Repository Link:** [https://github.com/ChinthanRai/secure-college-portal-devops](https://github.com/ChinthanRai/secure-college-portal-devops)
+
+**Live Demo:** [http://51.20.31.138:5173](http://51.20.31.138:5173)
 
 ---
 
 ## 🚀 Project Overview
 
-The **Secure College Portal** allows students to browse and request enrollment in courses, while administrators manage courses, students, and enrollment approvals.
+The **Secure College Portal** provides a seamless interface for managing academic operations. 
+- **Students** can securely register, browse available courses, and request enrollment.
+- **Administrators** possess full control to manage course catalogs, oversee student records, and approve or reject enrollment requests.
 
-This project also demonstrates real-world **DevOps practices**, including containerization using Docker and automation using CI/CD pipelines.
+Beyond the application logic, this project stands as a practical implementation of real-world **DevOps practices**, showcasing container orchestration using Docker and CI/CD pipelines via GitHub Actions.
+
+---
+
+## 📸 Screenshots
+
+### Login & Authentication
+![Login Page](./screenshots/login.png "Login Page")
+
+### Admin Dashboard (Recharts Analytics)
+![Admin Dashboard](./screenshots/admin-dashboard.png "Admin Dashboard")
+
+### Student Course Selection
+![Student Courses](./screenshots/student-courses.png "Student Courses")
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### 💻 Frontend
-
-* React (Vite)
-* Tailwind CSS
-* React Router DOM
-* Recharts
+- **Framework:** React 19 (via Vite)
+- **Styling:** Tailwind CSS, Framer Motion
+- **Icons:** Lucide React
+- **Routing:** React Router DOM
+- **Data Visualization:** Recharts
+- **HTTP Client:** Axios
 
 ### ⚙️ Backend
-
-* Node.js
-* Express.js
+- **Environment:** Node.js
+- **Framework:** Express.js v5
+- **Authentication:** JWT (JSON Web Tokens), bcryptjs
+- **Email/OTP:** Nodemailer
+- **Background Jobs:** node-cron
 
 ### 🗄️ Database
+- **Database:** MongoDB (via Mongoose)
 
-* MongoDB (Atlas)
-
-### 🔐 Authentication
-
-* JWT (JSON Web Tokens)
-* OTP Verification (Nodemailer)
-
-### ⚙️ DevOps Tools
-
-* Docker
-* Docker Compose
-* GitHub Actions (CI/CD)
-* Cloud Deployment (AWS / Render)
+### ⚙️ DevOps & Deployment
+- **Containerization:** Docker & Docker Compose
+- **CI/CD:** GitHub Actions
+- **Hosting / Cloud:** AWS (EC2) / Render / Vercel
 
 ---
 
-## 👥 Features
+## 👥 Key Features
 
-### 👨‍🎓 Student
+### 👨‍🎓 Student Module
+- **Secure Onboarding:** Registration and Login with OTP (One-Time Password) verification sent via email.
+- **Course Browsing:** View available courses with detailed descriptions.
+- **Enrollment System:** Request course enrollment and track approval status.
+- **Interactive Dashboard:** View personal statistics and enrolled courses.
 
-* Register & Login with OTP verification
-* View available courses
-* Request course enrollment
-* View dashboard
+### 👑 Admin Module
+- **Course Management:** Create, Read, Update, and Delete (CRUD) courses.
+- **Student Oversight:** View and manage registered students.
+- **Enrollment Approvals:** Review, approve, or reject student course enrollment requests.
+- **Analytics:** Dashboard featuring visual statistics built with Recharts.
 
-### 👑 Admin
-
-* Manage courses (Create/Update)
-* Manage students
-* Approve/Reject enrollment requests
-* Dashboard analytics
-
-### ⚙️ System
-
-* Role-based access control
-* Secure API with JWT
-* Background jobs using node-cron
-* Containerized application using Docker
-* Automated CI pipeline using GitHub Actions
+### ⚙️ System & Security Architecture
+- **Role-Based Access Control (RBAC):** Distinct privileges for students vs. admins.
+- **Token-Based Auth:** Secure API communication using JWT.
+- **Automated Tasks:** Background cron jobs for systemic checks (using `node-cron`).
 
 ---
 
-## 🐳 Docker Setup
+## 🐳 Running Locally with Docker
 
-### 📦 Run the application using Docker
+The easiest way to get the application up and running is via Docker Compose. Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed.
 
+### 1. Clone the repository
+```bash
+git clone https://github.com/ChinthanRai/secure-college-portal-devops.git
+cd secure-college-portal-devops
+```
+
+### 2. Configure Environment Variables
+You need to set up your `.env` files for both frontend and backend. 
+At a minimum, configure the backend environment with your MongoDB URI, Nodemailer credentials, and JWT Secret.
+
+### 3. Build and Run
 ```bash
 docker compose up --build
 ```
 
-👉 Frontend: http://localhost:3000
-👉 Backend: http://51.20.31.138:5000
+### 4. Access the Application
+- **Frontend (Live):** [http://51.20.31.138:5173](http://51.20.31.138:5173)
+- **Frontend (Local):** [http://localhost:3000](http://localhost:3000)
+- **Backend API:** [http://localhost:5000](http://localhost:5000) *(or your deployed IP like http://51.20.31.138:5000)*
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
-* Implemented using **GitHub Actions**
-* Automatically builds the Docker containers on every push to the main branch
-* Ensures continuous integration and reduces manual deployment effort
+The project uses **GitHub Actions** to enforce Continuous Integration and Continuous Deployment.
+- **Automated Builds:** Docker containers are rebuilt on every push to the `main` branch.
+- **Deployment Strategy:** Ensures seamless updates to cloud infrastructure without manual intervention, reducing downtime and human error.
 
 ---
 
-## ☁️ Deployment
+## ☁️ Deployment Architecture
 
-The application is designed to be deployed on cloud platforms such as:
-
-* AWS (EC2)
-* Render
-
----
-
-## 📸 Screenshots
-
-* Docker containers running
-* Application UI (Login, Dashboard)
-* GitHub Actions pipeline
+This portal is architected to be cloud-agnostic but is primarily targeted for:
+- **AWS (EC2):** For hosting Dockerized containers.
+- **Render / Vercel:** For separated Backend / Frontend static hosting.
+- **MongoDB Atlas:** For managed, cloud-hosted database services.
 
 ---
 
-## 🎯 Learning Outcomes
+## 🎯 Learning Outcomes Demonstrated
 
-* Understanding of MERN stack development
-* Implementation of Docker containerization
-* Setup of CI/CD pipeline
-* Cloud deployment basics
-* Real-world DevOps workflow
-
----
-
-## 📌 Conclusion
-
-This project demonstrates how modern web applications can be built, containerized, and deployed efficiently using DevOps practices, ensuring scalability, automation, and reliability.
+- Full-stack **MERN** application development and architecture.
+- Secure authentication workflows involving **JWT** and **Email OTPs**.
+- Creating responsive, animated UIs with **Tailwind CSS** and **Framer Motion**.
+- Containerizing multi-tier applications using **Docker** and **Docker Compose**.
+- Automating workflows with **GitHub Actions**.
+- Provisioning and deploying to **Cloud Platforms** (AWS).
 
 ---
 
 ## 👨‍💻 Author
 
 **Chinthan Rai**
+- GitHub: [ChinthanRai](https://github.com/ChinthanRai)
+
+---
+*Feel free to star ⭐ this repository if you find it helpful!*
