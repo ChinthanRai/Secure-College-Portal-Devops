@@ -30,8 +30,8 @@ Beyond the application logic, this project stands as a practical implementation 
 ### Admin Dashboard (Recharts Analytics)
 ![Admin Dashboard](./screenshots/admin-dashboard.png "Admin Dashboard")
 
-### Student Course Selection
-![Student Courses](./screenshots/student-courses.png "Student Courses")
+### Student Dashboard
+![Student Dashboard](./screenshots/student-courses.png "Student Dashboard")
 
 ---
 
