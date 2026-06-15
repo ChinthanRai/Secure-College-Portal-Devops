@@ -36,6 +36,4 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
-});git add .
-git commit -m "fix API URLs for EC2"
-git push
+});
