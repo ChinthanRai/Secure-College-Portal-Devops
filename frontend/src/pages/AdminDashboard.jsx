@@ -93,7 +93,7 @@ const AdminDashboard = () => {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: '#112240', border: '1px solid #233554', color: '#ccd6f6' }} />
+                                    <Tooltip itemStyle={{ color: '#ccd6f6' }} contentStyle={{ backgroundColor: '#112240', border: '1px solid #233554', color: '#ccd6f6' }} />
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -109,6 +109,7 @@ const AdminDashboard = () => {
                                     <XAxis dataKey="name" stroke="#8892b0" />
                                     <YAxis stroke="#8892b0" />
                                     <Tooltip
+                                        itemStyle={{ color: '#ccd6f6' }}
                                         cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
                                         contentStyle={{ backgroundColor: '#112240', border: '1px solid #233554', color: '#ccd6f6' }}
                                     />
@@ -127,10 +128,11 @@ const AdminDashboard = () => {
                             <BarChart data={data.charts.coursePopularity} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                                 <XAxis type="number" stroke="#8892b0" />
                                 <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 12, fill: '#8892b0' }} stroke="#8892b0" />
-                                <Tooltip
-                                    cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
-                                    contentStyle={{ backgroundColor: '#112240', border: '1px solid #233554', color: '#ccd6f6' }}
-                                />
+                                    <Tooltip
+                                        itemStyle={{ color: '#ccd6f6' }}
+                                        cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
+                                        contentStyle={{ backgroundColor: '#112240', border: '1px solid #233554', color: '#ccd6f6' }}
+                                    />
                                 <Legend />
                                 <Bar dataKey="students" fill="#64ffda" radius={[0, 4, 4, 0]} name="Enrolled Students" />
                             </BarChart>
