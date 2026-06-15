@@ -56,8 +56,8 @@ const StudentDashboard = () => {
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
             setShowOtpModal(true);
-            // Show OTP in alert for testing (remove in production)
-            alert(`OTP sent to your email!\n\nFor testing, your OTP is: ${response.data.otp}\n\nPlease enter this OTP in the modal.`);
+            // Show generic alert
+            alert(`OTP sent to your email!\n\nPlease enter this OTP in the modal.`);
         } catch (error) {
             alert(error.response?.data?.message || 'Error generating OTP');
             console.error('Enrollment error:', error);
