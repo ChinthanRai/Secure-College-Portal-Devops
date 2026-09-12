@@ -16,9 +16,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://<YOUR_EC2_IP>:5000
     ports:
       - "5173:80"
     environment:
-      - VITE_API_URL=http://51.20.31.138:5000
+      - VITE_API_URL=http://<YOUR_EC2_IP>:5000
     depends_on:
       - backend
