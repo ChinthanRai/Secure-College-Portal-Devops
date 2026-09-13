@@ -8,7 +8,7 @@ A robust, role-based web application built using the **MERN stack** (MongoDB, Ex
 
 **Repository Link:** [https://github.com/ChinthanRai/secure-college-portal-devops](https://github.com/ChinthanRai/secure-college-portal-devops)
 
-**Live Demo:** [http://51.20.31.138:5173](http://51.20.31.138:5173)
+**Live Demo:** [(http://13.48.195.69:5173/)](http://13.48.195.69:5173)
 
 ---
 
